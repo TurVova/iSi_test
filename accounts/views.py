@@ -20,6 +20,7 @@ class CreateCustomUserAPIView(APIView):
 
     def post(self, request):
         user_data = request.data
+        print(user_data)
         serializer = CustomUserSerializer(data=user_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -32,7 +33,7 @@ class CustomUserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     serializer_class = CustomUserSerializer
 
     def get(self, request, *args, **kwargs):
-        # serializer to handle turning our `User` object into something that
+        # serializer to handle turning our `CustomUser` object into something that
         # can be JSONified and sent to the client.
         serializer = self.serializer_class(request.user)
 

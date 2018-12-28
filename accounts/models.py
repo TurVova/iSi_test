@@ -1,18 +1,16 @@
-from django.db import models, transaction
-
-from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser, PermissionsMixin, BaseUserManager,
-    Permission)
+    Permission
+)
+from django.db import models
+from django.db import transaction
 
-class UserType(models.Model):
-    user_type = models.CharField(max_length=10)
 
 class CustomUserManager(BaseUserManager):
 
     def _create_user(self, username, password, **extra_fields):
         """
-        Creates and saves a User with the given email,and password.
+        Creates and saves a User with the given username and password.
         """
         if not username:
             raise ValueError('The given username must be set')
@@ -49,7 +47,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=30, blank=True)
     email = models.EmailField(max_length=40, unique=True, blank=True, null=True)
     is_staff = models.BooleanField(default=False)
-    user_type = models.ForeignKey(UserType, on_delete=models.SET_NULL, blank=True, null=True)
+    user_type = models.CharField(max_length=30)
 
     objects = CustomUserManager()
 
@@ -59,4 +57,3 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         super(CustomUser, self).save(*args, **kwargs)
         return self
-
