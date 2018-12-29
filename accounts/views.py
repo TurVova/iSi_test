@@ -4,27 +4,28 @@ from django.contrib.auth import user_logged_in
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from rest_framework.views import APIView
 from rest_framework_jwt.serializers import jwt_payload_handler
 
 from accounts.models import CustomUser
-from accounts.serializers import CustomUserSerializer
+from accounts.serializers import CustomUserSerializer, UserLoginSerializer
 
 
-class CreateCustomUserAPIView(APIView):
+class CreateCustomUserAPIView(CreateAPIView):
     # Allow any user (authenticated or not) to access this url
-    permission_classes = (AllowAny,)
+    permission_classes = [AllowAny,]
+    serializer_class = CustomUserSerializer
 
-    def post(self, request):
-        user_data = request.data
-        print(user_data)
-        serializer = CustomUserSerializer(data=user_data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    # def post(self, request):
+    #     user_data = request.data
+    #     serializer = CustomUserSerializer(data=user_data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response(serializer.data, status=HTTP_201_CREATED)
 
 
 class CustomUserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
@@ -37,7 +38,7 @@ class CustomUserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         # can be JSONified and sent to the client.
         serializer = self.serializer_class(request.user)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
         serializer_data = request.data.get('user', {})
@@ -48,7 +49,19 @@ class CustomUserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+class UserLoginAPIView(APIView):
+    permission_classes = [AllowAny,]
+    serializer_class = UserLoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        serializer = UserLoginSerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            new_data = serializer.data
+            return Response(new_data, status=HTTP_200_OK)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
